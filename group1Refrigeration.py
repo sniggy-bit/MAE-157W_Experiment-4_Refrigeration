@@ -40,7 +40,7 @@ df_ctv = clean_data(file_ctv)
 '''
 
 # Function to clean and convert one dataset
-def clean_data(file, config_type='AXV'):
+def clean_data(file, config_type):
     if config_type == 'AXV':
         columns = [
             "Suction Pressure (psig)", "T1 [C]", "T2 [C]", "T3 [C]", "T4 [C]", "T5 [C]", "T6 [C]",
@@ -61,10 +61,6 @@ def clean_data(file, config_type='AXV'):
             df[col.replace('[C]', '[K]')] = df[col] + 273.15
         if '[psi]' in col:
             df[col.replace('[psi]', '[Pa]')] = df[col] * 6894.76
-
-    # Add absolute suction pressure for AXV only
-    if config_type == 'AXV':
-        df["Suction Pressure [Pa]"] = (df["Suction Pressure (psig)"] + 14.7) * 6894.76
 
     return df
 
