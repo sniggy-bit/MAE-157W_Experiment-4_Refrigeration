@@ -1,4 +1,8 @@
-from . import refrigerationMain
+import numpy as np
+import plotly.express as px
+from CoolProp.CoolProp import PropsSI
+
+import refrigerationMain
 from refrigerationMain import df_axv, df_txv, df_ctv
 
 # Filter AXV at 15 psig
