@@ -3,7 +3,8 @@ import plotly.express as px
 from CoolProp.CoolProp import PropsSI
 
 import refrigerationMain
-from refrigerationMain import df_axv, df_txv, df_ctv
+
+df_axv, df_txv, df_ctv = refrigerationMain.df_axv, refrigerationMain.df_txv, refrigerationMain.df_ctv
 
 # Filter AXV at 15 psig
 axv15 = df_axv[df_axv["Suction Pressure (psig)"] == 15].iloc[0]
