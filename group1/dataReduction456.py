@@ -58,3 +58,30 @@ df_results = pd.DataFrame(results)
 print(df_results.to_string(index=False))
 
 ### DATA REDUCTION 5 ###
+
+superheat_results = []
+
+# Loop through the two TXV test conditions
+for i, label in enumerate(["Both Fans High", "Evap High, Cond Low"]):
+    row_txv = df_txv.iloc[i]
+    
+    T3 = row_txv["T3 [K]"]           # Actual temp after evaporator
+    P3 = row_txv["P3 [Pa]"]          # Suction pressure
+
+    # Get saturation temperature at suction pressure (saturated vapor)
+    T_sat = PropsSI("T", "P", P3, "Q", 1, "R12")
+
+    # Superheat = actual vapor temp - saturation temp
+    superheat = T3 - T_sat
+
+    superheat_results.append({
+        "Condition": label,
+        "T3 (K)": round(T3, 2),
+        "T_sat (K)": round(T_sat, 2),
+        "Superheat (K)": round(superheat, 2)
+    })
+
+# Display Superheat Table
+df_superheat = pd.DataFrame(superheat_results)
+print("\n### TXV Superheat Results (Data Reduction 5) ###")
+print(df_superheat.to_string(index=False))
