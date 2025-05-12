@@ -133,7 +133,7 @@ fig_hs.add_trace(go.Scatter(x=s_hh, y=h_hh, mode="lines+markers", name="Fans Hig
 
 # TXV: evap high, cond low
 fig_hs.add_trace(go.Scatter(x=s_hl, y=h_hl, mode="lines+markers", name="Cond Low, Evap High",
-                            marker=dict(symbol="square",size=6), line=dict(color="green")))
+                            marker=dict(symbol="square",size=6), line=dict(color="brown")))
 
 fig_hs.update_layout(
     title="Mollier Diagram (h-s) with Thermally Controlled Expander at Different Fan Configurations",
@@ -152,7 +152,7 @@ fig_ts.add_trace(go.Scatter(x=sV, y=T_dom, mode="lines", name="Sat. Vapor", line
 fig_ts.add_trace(go.Scatter(x=s_hh, y=T_hh, mode="lines+markers", name="Fans High",
                             marker=dict(symbol="circle",size=6), line=dict(color="black")))
 fig_ts.add_trace(go.Scatter(x=s_hl, y=T_hl, mode="lines+markers", name="Cond Low, Evap High",
-                            marker=dict(symbol="square",size=6), line=dict(color="green")))
+                            marker=dict(symbol="square",size=6), line=dict(color="brown")))
 
 # Coolant (air) inlet = T8 [K] on both rows
 T_cool_hh = txv_high_high["T8 [K]"]
