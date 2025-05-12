@@ -17,7 +17,7 @@ state_points = {
     "Cond Outlet": ("T4 [K]", "P3 [Pa]")
 }
 
-# Compute h (kJ/kg) and s (kJ/kg·K) at each point
+# Compute h (kJ/kg) and s (kJ/kg K) at each point
 cycle = {}
 for name, (Tcol, Pcol) in state_points.items():
     T = axv15[Tcol]
@@ -40,7 +40,7 @@ hL = [PropsSI("H","T",T,"Q",0,"R12")/1000 for T in T_dom]
 sV = [PropsSI("S","T",T,"Q",1,"R12")/1000 for T in T_dom]
 hV = [PropsSI("H","T",T,"Q",1,"R12")/1000 for T in T_dom]
 
-# Mollier (h–s) diagram
+# Mollier (h-s) diagram
 fig_hs = go.Figure()
 fig_hs.add_trace(go.Scatter(x=sL, y=hL, mode="lines", name="Sat. Liquid", line=dict(dash="dash")))
 fig_hs.add_trace(go.Scatter(x=sV, y=hV, mode="lines", name="Sat. Vapor", line=dict(dash="dash")))
@@ -53,7 +53,7 @@ fig_hs.update_layout(
 )
 fig_hs.show()
 
-# Temperature–Entropy (T–s) diagram
+# Temperature–Entropy (T-s) diagram
 fig_ts = go.Figure()
 fig_ts.add_trace(go.Scatter(x=sL, y=T_dom, mode="lines", name="Sat. Liquid", line=dict(dash="dash")))
 fig_ts.add_trace(go.Scatter(x=sV, y=T_dom, mode="lines", name="Sat. Vapor", line=dict(dash="dash")))
