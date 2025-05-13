@@ -352,6 +352,6 @@ fig_pv.update_layout(
     xaxis_title="Specific Volume v [m³/kg]",
     yaxis_title="Pressure P [kPa]",
     legend=dict(orientation="h", x=0.5, y=1.02, xanchor="center", yanchor='bottom'),
-    margin=dict(t=140)
+    margin=dict(t=120)
 )
 fig_pv.show()
