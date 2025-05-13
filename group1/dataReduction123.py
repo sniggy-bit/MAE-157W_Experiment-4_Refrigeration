@@ -6,10 +6,7 @@ import refrigerationMain
 
 df_axv, df_txv, df_ctv = refrigerationMain.df_axv, refrigerationMain.df_txv, refrigerationMain.df_ctv
 
-# Filter AXV at 15 psig
-axv15 = df_axv[df_axv["Suction Pressure (psig)"] == 15].iloc[0]
-
-# Define the four cycle state points
+# state points
 # 1: before throttling valve
 # 2: evap inlet
 # 3: evap outlet
@@ -21,7 +18,12 @@ state_points = {
     "Cond Inlet":  ("T5 [K]", "P4 [Pa]")
 }
 
-# Compute h (kJ/kg) and s (kJ/kg K) at each point
+### PRESSURE CONTROLLED EXPANDER DATA PROCESSING ###
+
+# filter data at 15 psig
+axv15 = df_axv[df_axv["Suction Pressure (psig)"] == 15].iloc[0]
+
+# compute h (kJ/kg) and s (kJ/kg K) at each point with coolprop
 cycle = {}
 for name, (Tcol, Pcol) in state_points.items():
     T = axv15[Tcol]
@@ -35,25 +37,23 @@ h1 = cycle["Cond Outlet"]["h"] * 1000
 h2 = h1
 P2 = axv15["P2 [Pa]"]
 
-# find quality x at (h2, P2)
+# find quality and associated T, s at (h2, P2)
 x2 = PropsSI("Q", "H", h2, "P", P2, "R12")
-
-# true mixed‐state entropy and temperature at state 2
 s2 = PropsSI("S", "P", P2, "Q", x2, "R12") / 1000      # kJ/kg·K
 T2 = PropsSI("T", "P", P2, "Q", x2, "R12")            # K
 
-# overwrite the Evap Inlet entry in your cycle dict
+# overwrite the Evap Inlet entry in cycle dict
 cycle["Evap Inlet"]["h"] = h2 / 1000   # back to kJ/kg
 cycle["Evap Inlet"]["s"] = s2
 cycle["Evap Inlet"]["T"] = T2
 
-# finding ideal state 4 assuming isentropic compression
+# find ideal state 4 assuming isentropic compression
 s_evap_out = cycle["Evap Outlet"]["s"]  # kJ/kg·K
 P_high = cycle["Cond Outlet"]["P"]
 h_ideal = PropsSI("H", "P", P_high, "S", s_evap_out*1000, "R12") / 1000
 T_ideal = PropsSI("T", "P", P_high, "S", s_evap_out*1000, "R12")
 
-# Close cycle loop
+# close cycle loop + create arrays of s, h, T values throughout cycle
 labels = list(cycle.keys()) + ["Cond Outlet"]
 cycle_s = [cycle[l]["s"] for l in labels]
 cycle_h = [cycle[l]["h"] for l in labels]
@@ -95,7 +95,7 @@ fig_hs.update_layout(
 )
 fig_hs.show()
 
-# Temperature–Entropy (T-s) diagram
+# T-s diagram
 fig_ts = go.Figure()
 fig_ts.add_trace(go.Scatter(x=sL, y=T_dom, mode="lines", name="Sat. Liquid", line=dict(color="blue")))
 fig_ts.add_trace(go.Scatter(x=sV, y=T_dom, mode="lines", name="Sat. Vapor", line=dict(color="red")))
@@ -103,7 +103,7 @@ fig_ts.add_trace(go.Scatter(x=cycle_s, y=cycle_T, mode="lines+markers", name="Cy
                            marker=dict(symbol="circle", size=8), line=dict(dash="dot", color="black")))
 fig_ts.add_trace(go.Scatter(x=[s_evap_out], y=[T_ideal], mode='markers', marker=dict(symbol='star', size=12, color='black'), name='Ideal State'))
 
-# Mark coolant (air) inlet temperature (T7)
+# coolant (air) inlet temperature (T7)
 T_cool = axv15["T7 [K]"]
 fig_ts.add_hline(
     y=T_cool,
@@ -133,15 +133,14 @@ fig_ts.update_layout(
 fig_ts.show()
 
 
-### thermally controlled data ###
-# If df_txv has a 'Configuration' column, you can filter by name:
+### THERMALLY CONTROLLED EXPANDER DATA PROCESSING ###
 txv_high_high = df_txv[df_txv["Configuration"] == 1].iloc[0] # both fans high
 txv_high_low  = df_txv[df_txv["Configuration"] == 2].iloc[0] # condenser fan low, evap fan high
 
 def compute_cycle(hrow):
     """Given a single-row Series hrow, return lists (s, h, T) closing back to Comp Outlet."""
     cycle_s, cycle_h, cycle_T = [], [], []
-    # First, pull the enthalpy before throttle (Comp Outlet)
+    # pull the enthalpy before throttle (Comp Outlet)
     T1col, P1col = state_points["Cond Outlet"]
     h1 = PropsSI("H", "T", hrow[T1col], "P", hrow[P1col], "R12")
 
@@ -175,20 +174,20 @@ def compute_cycle(hrow):
 
     return cycle_s, cycle_h, cycle_T
 
-# Compute for both cases
+# compute for both cases
 s_hh, h_hh, T_hh = compute_cycle(txv_high_high)
 s_hl, h_hl, T_hl = compute_cycle(txv_high_low)
 
-# Plot Mollier (h–s) for both configurations ---
+# Mollier (h–s) diagram for both configurations
 fig_hs = go.Figure()
 fig_hs.add_trace(go.Scatter(x=sL, y=hL, mode="lines", name="Sat. Liquid", line=dict(color="blue")))
 fig_hs.add_trace(go.Scatter(x=sV, y=hV, mode="lines", name="Sat. Vapor", line=dict(color="red")))
 
-# TXV: both fans high
+# both fans high
 fig_hs.add_trace(go.Scatter(x=s_hh, y=h_hh, mode="lines+markers", name="Fans High",
                             marker=dict(symbol="circle",size=6), line=dict(dash="dot", color="green")))
 
-# TXV: evap high, cond low
+# evap high, cond low
 fig_hs.add_trace(go.Scatter(x=s_hl, y=h_hl, mode="lines+markers", name="Cond Low, Evap High",
                             marker=dict(symbol="square",size=6), line=dict(dash="dot", color="blueviolet")))
 
@@ -205,19 +204,17 @@ fig_hs.update_layout(
 )
 fig_hs.show()
 
-
-# Plot Temperature–Entropy (T–s) for both configurations ---
+# T-s diagram for both configurations ---
 fig_ts = go.Figure()
 fig_ts.add_trace(go.Scatter(x=sL, y=T_dom, mode="lines", name="Sat. Liquid", line=dict(color="blue")))
 fig_ts.add_trace(go.Scatter(x=sV, y=T_dom, mode="lines", name="Sat. Vapor", line=dict(color="red")))
 
-# TXV cycles
 fig_ts.add_trace(go.Scatter(x=s_hh, y=T_hh, mode="lines+markers", name="Fans High",
                             marker=dict(symbol="circle",size=6), line=dict(dash="dot", color="green")))
 fig_ts.add_trace(go.Scatter(x=s_hl, y=T_hl, mode="lines+markers", name="Cond Low, Evap High",
                             marker=dict(symbol="square",size=6), line=dict(dash="dot", color="blueviolet")))
 
-# Coolant (air) inlet = T7 [K] on both rows
+# coolant inlet temp
 T_cool_hh = txv_high_high["T7 [K]"]
 T_cool_hl = txv_high_low ["T7 [K]"]
 
@@ -251,9 +248,9 @@ fig_ts.update_layout(
 fig_ts.show()
 
 
-### Capillary Tube Data ###
+### CAPILLARY TUBE EXPANDER DATA PROCESSING ###
 
-# computing P (kPa) and v (m³/kg) with isenthalpic expansion ---
+# compute P (kPa) and v (m³/kg)
 def cycle_pv(row):
     P_list, v_list = [], []
     # find enthalpy before expansion (Cond Outlet)
@@ -280,17 +277,16 @@ def cycle_pv(row):
     v_list.append(v_list[0])
     return P_list, v_list
 
-# extract each CTV configuration row by its Configuration code ---
+# extract data and comput pv for each setting
 ctv_bh = df_ctv[df_ctv["Configuration"] == 11].iloc[0]  # Both fans high
 ctv_hl = df_ctv[df_ctv["Configuration"] == 10].iloc[0]  # Evap high, cond low
 ctv_lh = df_ctv[df_ctv["Configuration"] == 1].iloc[0]   # Evap low, cond high
 
-# computing P–v for each
 p_bh, v_bh = cycle_pv(ctv_bh)
 p_hl, v_hl = cycle_pv(ctv_hl)
 p_lh, v_lh = cycle_pv(ctv_lh)
 
-# Sweep through two‐phase region
+# sweep through two‐phase region
 T_dom = np.linspace(Ttriple, Tcrit, 400)
 P_dom = [PropsSI("P","T",T,"Q",0,"R12")/1000 for T in T_dom]  # Pa→kPa
 vL_dom = [1/PropsSI("D","T",T,"Q",0,"R12") for T in T_dom]   # sat. liquid
@@ -308,7 +304,7 @@ P_arr  = np.array(P_dom)
 maskL = (vL_arr >= vmin*0.9) & (vL_arr <= vmax*1.1)
 maskV = (vV_arr >= vmin*0.9) & (vV_arr <= vmax*1.1)
 
-# plotting
+# P-v diagram
 fig_pv = go.Figure()
 
 fig_pv.add_trace(go.Scatter(
