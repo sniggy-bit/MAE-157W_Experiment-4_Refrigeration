@@ -32,11 +32,7 @@ for name, (Tcol, Pcol) in state_points.items():
 
 # must fix evap inlet values as coolprop doesn't take into account mixed state
 h1 = cycle["Cond Outlet"]["h"] * 1000  
-
-# throttling is isenthalpic
 h2 = h1
-
-# low‐side pressure P2
 P2 = axv15["P2 [Pa]"]
 
 # find quality x at (h2, P2)
@@ -50,6 +46,12 @@ T2 = PropsSI("T", "P", P2, "Q", x2, "R12")            # K
 cycle["Evap Inlet"]["h"] = h2 / 1000   # back to kJ/kg
 cycle["Evap Inlet"]["s"] = s2
 cycle["Evap Inlet"]["T"] = T2
+
+# finding ideal state 4 assuming isentropic compression
+s_evap_out = cycle["Evap Outlet"]["s"]  # kJ/kg·K
+P_high = cycle["Cond Outlet"]["P"]
+h_ideal = PropsSI("H", "P", P_high, "S", s_evap_out*1000, "R12") / 1000
+T_ideal = PropsSI("T", "P", P_high, "S", s_evap_out*1000, "R12")
 
 # Close cycle loop
 labels = list(cycle.keys()) + ["Cond Outlet"]
@@ -73,6 +75,7 @@ fig_hs.add_trace(go.Scatter(x=sL, y=hL, mode="lines", name="Sat. Liquid", line=d
 fig_hs.add_trace(go.Scatter(x=sV, y=hV, mode="lines", name="Sat. Vapor", line=dict(color="red")))
 fig_hs.add_trace(go.Scatter(x=cycle_s, y=cycle_h, mode="lines+markers", name="Cycle",
                             marker=dict(symbol="circle", size=8), line=dict(dash="dot", color="black")))
+fig_hs.add_trace(go.Scatter(x=[s_evap_out], y=[h_ideal], mode='markers', marker=dict(symbol='star', size=12, color='black'), name='Ideal State'))
 fig_hs.update_layout(
     title=dict(
         text="Mollier Diagram (h–s) for Pressure Regulated Expander at 15 psig",
@@ -98,6 +101,7 @@ fig_ts.add_trace(go.Scatter(x=sL, y=T_dom, mode="lines", name="Sat. Liquid", lin
 fig_ts.add_trace(go.Scatter(x=sV, y=T_dom, mode="lines", name="Sat. Vapor", line=dict(color="red")))
 fig_ts.add_trace(go.Scatter(x=cycle_s, y=cycle_T, mode="lines+markers", name="Cycle",
                            marker=dict(symbol="circle", size=8), line=dict(dash="dot", color="black")))
+fig_ts.add_trace(go.Scatter(x=[s_evap_out], y=[T_ideal], mode='markers', marker=dict(symbol='star', size=12, color='black'), name='Ideal State'))
 
 # Mark coolant (air) inlet temperature (T7)
 T_cool = axv15["T7 [K]"]

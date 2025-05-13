@@ -127,14 +127,16 @@ print(df_axv_results.to_string(index=False))
 
 # Plot COP vs suction pressure
 fig_cop = px.scatter(df_axv_results, x="Suction Pressure (psig)", y="COP",
-                     title="COP vs. Suction Pressure (AXV)",
+                     title="COP vs. Suction Pressure for Pressure Controlled Expander",
                      labels={"COP": "Coefficient of Performance"})
 fig_cop.update_traces(mode="lines+markers")
+fig_cop.update_layout(width=1000, height=600, title_x=0.5, margin=dict(t=60))
 fig_cop.show()
 
 # Plot RC vs suction pressure
 fig_qin = px.scatter(df_axv_results, x="Suction Pressure (psig)", y="Refrigeration Capacity (kW)",
-                     title="Refrigeration Capacity vs. Suction Pressure (AXV)",
+                     title="Refrigeration Capacity vs. Suction Pressure for Pressure Controlled Expander",
                      labels={"Refrigeration Capacity (kW)": "Cooling Capacity (kW)"})
 fig_qin.update_traces(mode="lines+markers")
+fig_qin.update_layout(width=1000, height=600, title_x=0.5, margin=dict(t=60))
 fig_qin.show()
