@@ -62,29 +62,33 @@ CTV_FR10 = CTV(2,19).*0.00756; % Flow rate [kg/s]
 CTV_FR01 = CTV(3,19).*0.00756; % Flow rate [kg/s]
 
 %initialize variables
-AXV_enthalpy_suction2psig = zeros(1,6); %(h1, h2, h3_T3, h3_T4, h4_T5, h4_T6)
-AXV_enthalpy_suction7psig = zeros(1,6);
-AXV_enthalpy_suction15psig = zeros(1,6);
-AXV_enthalpy_suction30psig = zeros(1,6);
+AXV_enthalpy_suction2psig = zeros(1,4); %(h1, h2, h3_T3, h3_T4, h4_T5, h4_T6)
+AXV_enthalpy_suction7psig = zeros(1,4);
+AXV_enthalpy_suction15psig = zeros(1,4);
+AXV_enthalpy_suction30psig = zeros(1,4);
 
-AXV_entropy_suction2psig = zeros(1,6); %(s1, s2, s3_T3, s3_T4, s4_T5, s4_T6)
-AXV_entropy_suction7psig = zeros(1,6);
-AXV_entropy_suction15psig = zeros(1,6);
-AXV_entropy_suction30psig = zeros(1,6);
+AXV_entropy_suction2psig = zeros(1,4); %(s1, s2, s3_T3, s3_T4, s4_T5, s4_T6)
+AXV_entropy_suction7psig = zeros(1,4);
+AXV_entropy_suction15psig = zeros(1,4);
+AXV_entropy_suction30psig = zeros(1,4);
 
-TXV_enthalpy_11 = zeros(1,6); %(h1, h2, h3_T3, h3_T4, h4_T5, h4_T6)
-TXV_enthalpy_10 = zeros(1,6);
+TXV_enthalpy_11 = zeros(1,4); %(h1, h2, h3, h4)
+TXV_enthalpy_10 = zeros(1,4);
 
-TXV_entropy_11 = zeros(1,6); %(s1, s2, s3_T3, s3_T4, s4_T5, s4_T6)
-TXV_entropy_10 = zeros(1,6);
+TXV_entropy_11 = zeros(1,4); %(s1, s2, s3, s4)
+TXV_entropy_10 = zeros(1,4);
 
-CTV_enthalpy_11 = zeros(1,6);%(h1, h2, h3_T3, h3_T4, h4_T5, h4_T6)
-CTV_enthalpy_10 = zeros(1,6);
-CTV_enthalpy_01 = zeros(1,6);
+CTV_enthalpy_11 = zeros(1,4);%(h1, h2, h3, h4)
+CTV_enthalpy_10 = zeros(1,4);
+CTV_enthalpy_01 = zeros(1,4);
 
-CTV_entropy_11 = zeros(1,6);%(s1, s2, s3_T3, s3_T4, s4_T5, s4_T6)
-CTV_entropy_10 = zeros(1,6);
-CTV_entropy_01 = zeros(1,6);
+CTV_entropy_11 = zeros(1,4);%(s1, s2, s3, s4)
+CTV_entropy_10 = zeros(1,4);
+CTV_entropy_01 = zeros(1,4);
+
+CTV_specificvolume_11= zeros(1,4);
+CTV_specificvolume_10= zeros(1,4);
+CTV_specificvolume_01= zeros(1,4);
 
 %compute h and s at all points. 
 
@@ -115,6 +119,12 @@ TXV_entropy_10(1,1) = py.CoolProp.CoolProp.PropsSI('S','T',TXV_temp10(1,1),'Q',0
 CTV_entropy_11(1,1) = py.CoolProp.CoolProp.PropsSI('S','T',CTV_temp11(1,1),'Q',0,'R12');
 CTV_entropy_10(1,1) = py.CoolProp.CoolProp.PropsSI('S','T',CTV_temp10(1,1),'Q',0,'R12');
 CTV_entropy_01(1,1) = py.CoolProp.CoolProp.PropsSI('S','T',CTV_temp01(1,1),'Q',0,'R12');
+
+%specific volume for CTV cases
+
+CTV_specificvolume_11(1,1) = 1/py.CoolProp.CoolProp.PropsSI('D','T',CTV_temp11(1,1),'Q',0,'R12');
+CTV_specificvolume_10(1,1) = 1/py.CoolProp.CoolProp.PropsSI('D','T',CTV_temp10(1,1),'Q',0,'R12');
+CTV_specificvolume_01(1,1) = 1/py.CoolProp.CoolProp.PropsSI('D','T',CTV_temp01(1,1),'Q',0,'R12');
 
 % For state two, assume h1 = h2 and we know that we have a mixed
 %solution at P2. 
@@ -158,178 +168,309 @@ CTV_entropy_11(1,2) = py.CoolProp.CoolProp.PropsSI('S','P',CTV_gauge11(1,2),'H',
 CTV_entropy_10(1,2) = py.CoolProp.CoolProp.PropsSI('S','P',CTV_gauge10(1,2),'H',CTV_enthalpy_10(1,2),'R12');
 CTV_entropy_01(1,2) = py.CoolProp.CoolProp.PropsSI('S','P',CTV_gauge01(1,2),'H',CTV_enthalpy_01(1,2),'R12');
 
+%specific volume for CTV cases
+
+CTV_specificvolume_11(1,2) = 1/py.CoolProp.CoolProp.PropsSI('D','P',CTV_gauge11(1,2),'H',CTV_enthalpy_11(1,2),'R12');
+CTV_specificvolume_10(1,2) = 1/py.CoolProp.CoolProp.PropsSI('D','P',CTV_gauge10(1,2),'H',CTV_enthalpy_10(1,2),'R12');
+CTV_specificvolume_01(1,2) = 1/py.CoolProp.CoolProp.PropsSI('D','P',CTV_gauge01(1,2),'H',CTV_enthalpy_01(1,2),'R12');
+
 %For state three, we have T3 and T4 as temperatures that are after exiting.
 %Both are after the evaporator and before the compressor, but T3 is before
-%the accumulator and T4 is after. Not sure which temperature to use for
-%this state 3, but we will probably need both. Therefore, we calculate
-%states h3_T3 and h3_T4 (J/kg), each of which are at P3. Use superheated vapor tables.
+%the accumulator and T4 is after. Solved by averaging T3 and T4 @P3 using
+%superheated tables.
 
-AXV_enthalpy_suction2psig(1,3) = py.CoolProp.CoolProp.PropsSI('H','P',AXV_gauge(1,3),'T',AXV_temp(1,3),'R12');
-AXV_enthalpy_suction7psig(1,3) = py.CoolProp.CoolProp.PropsSI('H','P',AXV_gauge(2,3),'T',AXV_temp(2,3),'R12');
-AXV_enthalpy_suction15psig(1,3) = py.CoolProp.CoolProp.PropsSI('H','P',AXV_gauge(3,3),'T',AXV_temp(3,3),'R12');
-AXV_enthalpy_suction30psig(1,3) = py.CoolProp.CoolProp.PropsSI('H','P',AXV_gauge(4,3),'T',AXV_temp(4,3),'R12');
+AXV_enthalpy_suction2psig(1,3) = py.CoolProp.CoolProp.PropsSI('H','P',AXV_gauge(1,3),'T',((AXV_temp(1,3)+AXV_temp(1,4))/2),'R12');
+AXV_enthalpy_suction7psig(1,3) = py.CoolProp.CoolProp.PropsSI('H','P',AXV_gauge(2,3),'T',((AXV_temp(2,3)+AXV_temp(2,4))/2),'R12');
+AXV_enthalpy_suction15psig(1,3) = py.CoolProp.CoolProp.PropsSI('H','P',AXV_gauge(3,3),'T',((AXV_temp(3,3)+AXV_temp(3,4))/2),'R12');
+AXV_enthalpy_suction30psig(1,3) = py.CoolProp.CoolProp.PropsSI('H','P',AXV_gauge(4,3),'T',((AXV_temp(4,3)+AXV_temp(4,4))/2),'R12');
 
-AXV_enthalpy_suction2psig(1,4) = py.CoolProp.CoolProp.PropsSI('H','P',AXV_gauge(1,3),'T',AXV_temp(1,4),'R12');
-AXV_enthalpy_suction7psig(1,4) = py.CoolProp.CoolProp.PropsSI('H','P',AXV_gauge(2,3),'T',AXV_temp(2,4),'R12');
-AXV_enthalpy_suction15psig(1,4) = py.CoolProp.CoolProp.PropsSI('H','P',AXV_gauge(3,3),'T',AXV_temp(3,4),'R12');
-AXV_enthalpy_suction30psig(1,4) = py.CoolProp.CoolProp.PropsSI('H','P',AXV_gauge(4,3),'T',AXV_temp(4,4),'R12');
+TXV_enthalpy_11(1,3) = py.CoolProp.CoolProp.PropsSI('H','P',TXV_gauge11(1,3),'T',((TXV_temp11(1,3)+TXV_temp11(1,4))/2),'R12');
+TXV_enthalpy_10(1,3) = py.CoolProp.CoolProp.PropsSI('H','P',TXV_gauge10(1,3),'T',((TXV_temp10(1,3)+TXV_temp10(1,4))/2),'R12');
 
-TXV_enthalpy_11(1,3) = py.CoolProp.CoolProp.PropsSI('H','P',TXV_gauge11(1,3),'T',TXV_temp11(1,3),'R12');
-TXV_enthalpy_10(1,3) = py.CoolProp.CoolProp.PropsSI('H','P',TXV_gauge10(1,3),'T',TXV_temp10(1,3),'R12');
+CTV_enthalpy_11(1,3) = py.CoolProp.CoolProp.PropsSI('H','P',CTV_gauge11(1,3),'T',((CTV_temp11(1,3)+CTV_temp11(1,4))/2),'R12');
+CTV_enthalpy_10(1,3) = py.CoolProp.CoolProp.PropsSI('H','P',CTV_gauge10(1,3),'T',((CTV_temp10(1,3)+CTV_temp10(1,4))/2),'R12');
+CTV_enthalpy_01(1,3) = py.CoolProp.CoolProp.PropsSI('H','P',CTV_gauge01(1,3),'T',((CTV_temp01(1,3)+CTV_temp01(1,4))/2),'R12');
 
-TXV_enthalpy_11(1,4) = py.CoolProp.CoolProp.PropsSI('H','P',TXV_gauge11(1,3),'T',TXV_temp11(1,4),'R12');
-TXV_enthalpy_10(1,4) = py.CoolProp.CoolProp.PropsSI('H','P',TXV_gauge10(1,3),'T',TXV_temp10(1,4),'R12');
-
-CTV_enthalpy_11(1,3) = py.CoolProp.CoolProp.PropsSI('H','P',CTV_gauge11(1,3),'T',CTV_temp11(1,3),'R12');
-CTV_enthalpy_10(1,3) = py.CoolProp.CoolProp.PropsSI('H','P',CTV_gauge10(1,3),'T',CTV_temp10(1,3),'R12');
-CTV_enthalpy_01(1,3) = py.CoolProp.CoolProp.PropsSI('H','P',CTV_gauge01(1,3),'T',CTV_temp01(1,3),'R12');
-
-CTV_enthalpy_11(1,4) = py.CoolProp.CoolProp.PropsSI('H','P',CTV_gauge11(1,3),'T',CTV_temp11(1,4),'R12');
-CTV_enthalpy_10(1,4) = py.CoolProp.CoolProp.PropsSI('H','P',CTV_gauge10(1,3),'T',CTV_temp10(1,4),'R12');
-CTV_enthalpy_01(1,4) = py.CoolProp.CoolProp.PropsSI('H','P',CTV_gauge01(1,3),'T',CTV_temp01(1,4),'R12');
-
-%now doing the exact same thing but solving for entropies s3_T3 and s3_T4
+%now doing the exact same thing but solving for entropy s3
 %(J/kgK)
-AXV_entropy_suction2psig(1,3) = py.CoolProp.CoolProp.PropsSI('S','P',AXV_gauge(1,3),'T',AXV_temp(1,3),'R12');
-AXV_entropy_suction7psig(1,3) = py.CoolProp.CoolProp.PropsSI('S','P',AXV_gauge(2,3),'T',AXV_temp(2,3),'R12');
-AXV_entropy_suction15psig(1,3) = py.CoolProp.CoolProp.PropsSI('S','P',AXV_gauge(3,3),'T',AXV_temp(3,3),'R12');
-AXV_entropy_suction30psig(1,3) = py.CoolProp.CoolProp.PropsSI('S','P',AXV_gauge(4,3),'T',AXV_temp(4,3),'R12');
+AXV_entropy_suction2psig(1,3) = py.CoolProp.CoolProp.PropsSI('S','P',AXV_gauge(1,3),'T',((AXV_temp(1,3)+AXV_temp(1,4))/2),'R12');
+AXV_entropy_suction7psig(1,3) = py.CoolProp.CoolProp.PropsSI('S','P',AXV_gauge(2,3),'T',((AXV_temp(2,3)+AXV_temp(2,4))/2),'R12');
+AXV_entropy_suction15psig(1,3) = py.CoolProp.CoolProp.PropsSI('S','P',AXV_gauge(3,3),'T',((AXV_temp(3,3)+AXV_temp(3,4))/2),'R12');
+AXV_entropy_suction30psig(1,3) = py.CoolProp.CoolProp.PropsSI('S','P',AXV_gauge(4,3),'T',((AXV_temp(4,3)+AXV_temp(4,4))/2),'R12');
 
-AXV_entropy_suction2psig(1,4) = py.CoolProp.CoolProp.PropsSI('S','P',AXV_gauge(1,3),'T',AXV_temp(1,4),'R12');
-AXV_entropy_suction7psig(1,4) = py.CoolProp.CoolProp.PropsSI('S','P',AXV_gauge(2,3),'T',AXV_temp(2,4),'R12');
-AXV_entropy_suction15psig(1,4) = py.CoolProp.CoolProp.PropsSI('S','P',AXV_gauge(3,3),'T',AXV_temp(3,4),'R12');
-AXV_entropy_suction30psig(1,4) = py.CoolProp.CoolProp.PropsSI('S','P',AXV_gauge(4,3),'T',AXV_temp(4,4),'R12');
+TXV_entropy_11(1,3) = py.CoolProp.CoolProp.PropsSI('S','P',TXV_gauge11(1,3),'T',((TXV_temp11(1,3)+TXV_temp11(1,4))/2),'R12');
+TXV_entropy_10(1,3) = py.CoolProp.CoolProp.PropsSI('S','P',TXV_gauge10(1,3),'T',((TXV_temp10(1,3)+TXV_temp10(1,4))/2),'R12');
 
-TXV_entropy_11(1,3) = py.CoolProp.CoolProp.PropsSI('S','P',TXV_gauge11(1,3),'T',TXV_temp11(1,3),'R12');
-TXV_entropy_10(1,3) = py.CoolProp.CoolProp.PropsSI('S','P',TXV_gauge10(1,3),'T',TXV_temp10(1,3),'R12');
+CTV_entropy_11(1,3) = py.CoolProp.CoolProp.PropsSI('S','P',CTV_gauge11(1,3),'T',((CTV_temp11(1,3)+CTV_temp11(1,4))/2),'R12');
+CTV_entropy_10(1,3) = py.CoolProp.CoolProp.PropsSI('S','P',CTV_gauge10(1,3),'T',((CTV_temp10(1,3)+CTV_temp10(1,4))/2),'R12');
+CTV_entropy_01(1,3) = py.CoolProp.CoolProp.PropsSI('S','P',CTV_gauge01(1,3),'T',((CTV_temp01(1,3)+CTV_temp01(1,4))/2),'R12');
 
-TXV_entropy_11(1,4) = py.CoolProp.CoolProp.PropsSI('S','P',TXV_gauge11(1,3),'T',TXV_temp11(1,4),'R12');
-TXV_entropy_10(1,4) = py.CoolProp.CoolProp.PropsSI('S','P',TXV_gauge10(1,3),'T',TXV_temp10(1,4),'R12');
+%specific volume for CTV cases
 
-CTV_entropy_11(1,3) = py.CoolProp.CoolProp.PropsSI('S','P',CTV_gauge11(1,3),'T',CTV_temp11(1,3),'R12');
-CTV_entropy_10(1,3) = py.CoolProp.CoolProp.PropsSI('S','P',CTV_gauge10(1,3),'T',CTV_temp10(1,3),'R12');
-CTV_entropy_01(1,3) = py.CoolProp.CoolProp.PropsSI('S','P',CTV_gauge01(1,3),'T',CTV_temp01(1,3),'R12');
-
-CTV_entropy_11(1,4) = py.CoolProp.CoolProp.PropsSI('S','P',CTV_gauge11(1,3),'T',CTV_temp11(1,4),'R12');
-CTV_entropy_10(1,4) = py.CoolProp.CoolProp.PropsSI('S','P',CTV_gauge10(1,3),'T',CTV_temp10(1,4),'R12');
-CTV_entropy_01(1,4) = py.CoolProp.CoolProp.PropsSI('S','P',CTV_gauge01(1,3),'T',CTV_temp01(1,4),'R12');
+CTV_specificvolume_11(1,3) = 1/py.CoolProp.CoolProp.PropsSI('D','P',CTV_gauge11(1,3),'T',((CTV_temp11(1,3)+CTV_temp11(1,4))/2),'R12');
+CTV_specificvolume_10(1,3) = 1/py.CoolProp.CoolProp.PropsSI('D','P',CTV_gauge10(1,3),'T',((CTV_temp10(1,3)+CTV_temp10(1,4))/2),'R12');
+CTV_specificvolume_01(1,3) = 1/py.CoolProp.CoolProp.PropsSI('D','P',CTV_gauge01(1,3),'T',((CTV_temp01(1,3)+CTV_temp01(1,4))/2),'R12');
 
 %For state four, we have T5 and T6 as temperatures that are after exiting
-%the compressor and when entering the condenser respectively. Therefore, we calculate
-%states h4_T5 and h4_T6 at P4. Use superheated vapor tables.
+%the compressor and when entering the condenser respectively. Therefore, we average the temperatures
+% and find h at P4. Use superheated vapor tables.
 
-AXV_enthalpy_suction2psig(1,5) = py.CoolProp.CoolProp.PropsSI('H','P',AXV_gauge(1,4),'T',AXV_temp(1,5),'R12');
-AXV_enthalpy_suction7psig(1,5) = py.CoolProp.CoolProp.PropsSI('H','P',AXV_gauge(2,4),'T',AXV_temp(2,5),'R12');
-AXV_enthalpy_suction15psig(1,5) = py.CoolProp.CoolProp.PropsSI('H','P',AXV_gauge(3,4),'T',AXV_temp(3,5),'R12');
-AXV_enthalpy_suction30psig(1,5) = py.CoolProp.CoolProp.PropsSI('H','P',AXV_gauge(4,4),'T',AXV_temp(4,5),'R12');
+AXV_enthalpy_suction2psig(1,4) = py.CoolProp.CoolProp.PropsSI('H','P',AXV_gauge(1,4),'T',((AXV_temp(1,5)+AXV_temp(1,6))/2),'R12');
+AXV_enthalpy_suction7psig(1,4) = py.CoolProp.CoolProp.PropsSI('H','P',AXV_gauge(2,4),'T',((AXV_temp(2,5)+AXV_temp(2,6))/2),'R12');
+AXV_enthalpy_suction15psig(1,4) = py.CoolProp.CoolProp.PropsSI('H','P',AXV_gauge(3,4),'T',((AXV_temp(3,5)+AXV_temp(3,6))/2),'R12');
+AXV_enthalpy_suction30psig(1,4) = py.CoolProp.CoolProp.PropsSI('H','P',AXV_gauge(4,4),'T',((AXV_temp(4,5)+AXV_temp(4,6))/2),'R12');
 
-AXV_enthalpy_suction2psig(1,6) = py.CoolProp.CoolProp.PropsSI('H','P',AXV_gauge(1,4),'T',AXV_temp(1,6),'R12');
-AXV_enthalpy_suction7psig(1,6) = py.CoolProp.CoolProp.PropsSI('H','P',AXV_gauge(2,4),'T',AXV_temp(2,6),'R12');
-AXV_enthalpy_suction15psig(1,6) = py.CoolProp.CoolProp.PropsSI('H','P',AXV_gauge(3,4),'T',AXV_temp(3,6),'R12');
-AXV_enthalpy_suction30psig(1,6) = py.CoolProp.CoolProp.PropsSI('H','P',AXV_gauge(4,4),'T',AXV_temp(4,6),'R12');
+TXV_enthalpy_11(1,4) = py.CoolProp.CoolProp.PropsSI('H','P',TXV_gauge11(1,4),'T',((TXV_temp11(1,5)+TXV_temp11(1,6))/2),'R12');
+TXV_enthalpy_10(1,4) = py.CoolProp.CoolProp.PropsSI('H','P',TXV_gauge10(1,4),'T',((TXV_temp10(1,5)+TXV_temp10(1,6))/2),'R12');
 
-TXV_enthalpy_11(1,5) = py.CoolProp.CoolProp.PropsSI('H','P',TXV_gauge11(1,4),'T',TXV_temp11(1,5),'R12');
-TXV_enthalpy_10(1,5) = py.CoolProp.CoolProp.PropsSI('H','P',TXV_gauge10(1,4),'T',TXV_temp10(1,5),'R12');
+CTV_enthalpy_11(1,4) = py.CoolProp.CoolProp.PropsSI('H','P',CTV_gauge11(1,4),'T',((CTV_temp11(1,5)+CTV_temp11(1,6))/2),'R12');
+CTV_enthalpy_10(1,4) = py.CoolProp.CoolProp.PropsSI('H','P',CTV_gauge10(1,4),'T',((CTV_temp10(1,5)+CTV_temp10(1,6))/2),'R12');
+CTV_enthalpy_01(1,4) = py.CoolProp.CoolProp.PropsSI('H','P',CTV_gauge01(1,4),'T',((CTV_temp01(1,5)+CTV_temp01(1,6))/2),'R12');
 
-TXV_enthalpy_11(1,6) = py.CoolProp.CoolProp.PropsSI('H','P',TXV_gauge11(1,4),'T',TXV_temp11(1,6),'R12');
-TXV_enthalpy_10(1,6) = py.CoolProp.CoolProp.PropsSI('H','P',TXV_gauge10(1,4),'T',TXV_temp10(1,6),'R12');
+%same thing for entropies s4 (J/kgK). superheated vapor tables
+AXV_entropy_suction2psig(1,4) = py.CoolProp.CoolProp.PropsSI('S','P',AXV_gauge(1,4),'T',((AXV_temp(1,5)+AXV_temp(1,6))/2),'R12');
+AXV_entropy_suction7psig(1,4) = py.CoolProp.CoolProp.PropsSI('S','P',AXV_gauge(2,4),'T',((AXV_temp(2,5)+AXV_temp(2,6))/2),'R12');
+AXV_entropy_suction15psig(1,4) = py.CoolProp.CoolProp.PropsSI('S','P',AXV_gauge(3,4),'T',((AXV_temp(3,5)+AXV_temp(3,6))/2),'R12');
+AXV_entropy_suction30psig(1,4) = py.CoolProp.CoolProp.PropsSI('S','P',AXV_gauge(4,4),'T',((AXV_temp(4,5)+AXV_temp(4,6))/2),'R12');
 
-CTV_enthalpy_11(1,5) = py.CoolProp.CoolProp.PropsSI('H','P',CTV_gauge11(1,4),'T',CTV_temp11(1,5),'R12');
-CTV_enthalpy_10(1,5) = py.CoolProp.CoolProp.PropsSI('H','P',CTV_gauge10(1,4),'T',CTV_temp10(1,5),'R12');
-CTV_enthalpy_01(1,5) = py.CoolProp.CoolProp.PropsSI('H','P',CTV_gauge01(1,4),'T',CTV_temp01(1,5),'R12');
+TXV_entropy_11(1,4) = py.CoolProp.CoolProp.PropsSI('S','P',TXV_gauge11(1,4),'T',((TXV_temp11(1,5)+TXV_temp11(1,6))/2),'R12');
+TXV_entropy_10(1,4) = py.CoolProp.CoolProp.PropsSI('S','P',TXV_gauge10(1,4),'T',((TXV_temp10(1,5)+TXV_temp10(1,6))/2),'R12');
 
-CTV_enthalpy_11(1,6) = py.CoolProp.CoolProp.PropsSI('H','P',CTV_gauge11(1,4),'T',CTV_temp11(1,6),'R12');
-CTV_enthalpy_10(1,6) = py.CoolProp.CoolProp.PropsSI('H','P',CTV_gauge10(1,4),'T',CTV_temp10(1,6),'R12');
-CTV_enthalpy_01(1,6) = py.CoolProp.CoolProp.PropsSI('H','P',CTV_gauge01(1,4),'T',CTV_temp01(1,6),'R12');
+CTV_entropy_11(1,4) = py.CoolProp.CoolProp.PropsSI('S','P',CTV_gauge11(1,4),'T',((CTV_temp11(1,5)+CTV_temp11(1,6))/2),'R12');
+CTV_entropy_10(1,4) = py.CoolProp.CoolProp.PropsSI('S','P',CTV_gauge10(1,4),'T',((CTV_temp10(1,5)+CTV_temp10(1,6))/2),'R12');
+CTV_entropy_01(1,4) = py.CoolProp.CoolProp.PropsSI('S','P',CTV_gauge01(1,4),'T',((CTV_temp01(1,5)+CTV_temp01(1,6))/2),'R12');
 
+%specific volume for CTV cases
 
-%same thing for entropies s4_T5 and s4_T6 (J/kgK). superheated vapor tables
-AXV_entropy_suction2psig(1,5) = py.CoolProp.CoolProp.PropsSI('S','P',AXV_gauge(1,4),'T',AXV_temp(1,5),'R12');
-AXV_entropy_suction7psig(1,5) = py.CoolProp.CoolProp.PropsSI('S','P',AXV_gauge(2,4),'T',AXV_temp(2,5),'R12');
-AXV_entropy_suction15psig(1,5) = py.CoolProp.CoolProp.PropsSI('S','P',AXV_gauge(3,4),'T',AXV_temp(3,5),'R12');
-AXV_entropy_suction30psig(1,5) = py.CoolProp.CoolProp.PropsSI('S','P',AXV_gauge(4,4),'T',AXV_temp(4,5),'R12');
-
-AXV_entropy_suction2psig(1,6) = py.CoolProp.CoolProp.PropsSI('S','P',AXV_gauge(1,4),'T',AXV_temp(1,6),'R12');
-AXV_entropy_suction7psig(1,6) = py.CoolProp.CoolProp.PropsSI('S','P',AXV_gauge(2,4),'T',AXV_temp(2,6),'R12');
-AXV_entropy_suction15psig(1,6) = py.CoolProp.CoolProp.PropsSI('S','P',AXV_gauge(3,4),'T',AXV_temp(3,6),'R12');
-AXV_entropy_suction30psig(1,6) = py.CoolProp.CoolProp.PropsSI('S','P',AXV_gauge(4,4),'T',AXV_temp(4,6),'R12');
-
-TXV_entropy_11(1,5) = py.CoolProp.CoolProp.PropsSI('S','P',TXV_gauge11(1,4),'T',TXV_temp11(1,5),'R12');
-TXV_entropy_10(1,5) = py.CoolProp.CoolProp.PropsSI('S','P',TXV_gauge10(1,4),'T',TXV_temp10(1,5),'R12');
-
-TXV_entropy_11(1,6) = py.CoolProp.CoolProp.PropsSI('S','P',TXV_gauge11(1,4),'T',TXV_temp11(1,6),'R12');
-TXV_entropy_10(1,6) = py.CoolProp.CoolProp.PropsSI('S','P',TXV_gauge10(1,4),'T',TXV_temp10(1,6),'R12');
-
-CTV_entropy_11(1,5) = py.CoolProp.CoolProp.PropsSI('S','P',CTV_gauge11(1,4),'T',CTV_temp11(1,5),'R12');
-CTV_entropy_10(1,5) = py.CoolProp.CoolProp.PropsSI('S','P',CTV_gauge10(1,4),'T',CTV_temp10(1,5),'R12');
-CTV_entropy_01(1,5) = py.CoolProp.CoolProp.PropsSI('S','P',CTV_gauge01(1,4),'T',CTV_temp01(1,5),'R12');
-
-CTV_entropy_11(1,6) = py.CoolProp.CoolProp.PropsSI('S','P',CTV_gauge11(1,4),'T',CTV_temp11(1,6),'R12');
-CTV_entropy_10(1,6) = py.CoolProp.CoolProp.PropsSI('S','P',CTV_gauge10(1,4),'T',CTV_temp10(1,6),'R12');
-CTV_entropy_01(1,6) = py.CoolProp.CoolProp.PropsSI('S','P',CTV_gauge01(1,4),'T',CTV_temp01(1,6),'R12');
+CTV_specificvolume_11(1,4) = 1/py.CoolProp.CoolProp.PropsSI('D','P',CTV_gauge11(1,4),'T',((CTV_temp11(1,5)+CTV_temp11(1,6))/2),'R12');
+CTV_specificvolume_10(1,4) = 1/py.CoolProp.CoolProp.PropsSI('D','P',CTV_gauge10(1,4),'T',((CTV_temp10(1,5)+CTV_temp10(1,6))/2),'R12');
+CTV_specificvolume_01(1,4) = 1/py.CoolProp.CoolProp.PropsSI('D','P',CTV_gauge01(1,4),'T',((CTV_temp01(1,5)+CTV_temp01(1,6))/2),'R12');
 
 %state four virtual temperature calculation. Required for low evaporator pressures
 %question. is this temperature the one thermocouple 5 or thermocouple 6 would measure
 
-%assume s4 = s3_T4
-AXV_isentropicstate4entropy_suction2psig = AXV_entropy_suction2psig(1,4);
-AXV_isentropicstate4entropy_suction7psig = AXV_entropy_suction7psig(1,4);
-AXV_isentropicstate4entropy_suction15psig = AXV_entropy_suction15psig(1,4);
-AXV_isentropicstate4entropy_suction30psig = AXV_entropy_suction30psig(1,4);
+%assume s4 = s3
+AXV_isentropicstate4entropy_suction2psig = AXV_entropy_suction2psig(1,3);
+AXV_isentropicstate4entropy_suction7psig = AXV_entropy_suction7psig(1,3);
+AXV_isentropicstate4entropy_suction15psig = AXV_entropy_suction15psig(1,3);
+AXV_isentropicstate4entropy_suction30psig = AXV_entropy_suction30psig(1,3);
 
 AXV_virtualstate4temp_suction2psig = py.CoolProp.CoolProp.PropsSI('T','P',AXV_gauge(1,4),'S',AXV_isentropicstate4entropy_suction2psig,'R12');
-AXV_virtualstate4temp_suction7psig = py.CoolProp.CoolProp.PropsSI('T','P',AXV_gauge(1,4),'S',AXV_isentropicstate4entropy_suction7psig,'R12');
-AXV_virtualstate4temp_suction15psig = py.CoolProp.CoolProp.PropsSI('T','P',AXV_gauge(1,4),'S',AXV_isentropicstate4entropy_suction15psig,'R12');
-AXV_virtualstate4temp_suction30psig = py.CoolProp.CoolProp.PropsSI('T','P',AXV_gauge(1,4),'S',AXV_isentropicstate4entropy_suction30psig,'R12');
+AXV_virtualstate4temp_suction7psig = py.CoolProp.CoolProp.PropsSI('T','P',AXV_gauge(2,4),'S',AXV_isentropicstate4entropy_suction7psig,'R12');
+AXV_virtualstate4temp_suction15psig = py.CoolProp.CoolProp.PropsSI('T','P',AXV_gauge(3,4),'S',AXV_isentropicstate4entropy_suction15psig,'R12');
+AXV_virtualstate4temp_suction30psig = py.CoolProp.CoolProp.PropsSI('T','P',AXV_gauge(4,4),'S',AXV_isentropicstate4entropy_suction30psig,'R12');
 
-TXV_isentropicstate4entropy_11 = TXV_entropy_11(1,4);
-TXV_isentropicstate4entropy_10 = TXV_entropy_10(1,4);
+AXV_virtualstate4enthalpy_suction15psig = py.CoolProp.CoolProp.PropsSI('H','P',AXV_gauge(3,4),'S',AXV_isentropicstate4entropy_suction15psig,'R12');
+
+TXV_isentropicstate4entropy_11 = TXV_entropy_11(1,3);
+TXV_isentropicstate4entropy_10 = TXV_entropy_10(1,3);
 
 TXV_virtualstate4temp_11 = py.CoolProp.CoolProp.PropsSI('T','P',TXV_gauge11(1,4),'S',TXV_isentropicstate4entropy_11,'R12');
 TXV_virtualstate4temp_10 = py.CoolProp.CoolProp.PropsSI('T','P',TXV_gauge10(1,4),'S',TXV_isentropicstate4entropy_10,'R12');
 
-CTV_isentropicstate4entropy_11 = CTV_entropy_11(1,4);
-CTV_isentropicstate4entropy_10 = CTV_entropy_10(1,4);
-CTV_isentropicstate4entropy_01 = CTV_entropy_01(1,4);
+CTV_isentropicstate4entropy_11 = CTV_entropy_11(1,3);
+CTV_isentropicstate4entropy_10 = CTV_entropy_10(1,3);
+CTV_isentropicstate4entropy_01 = CTV_entropy_01(1,3);
 
 CTV_virtualstate4temp_11 = py.CoolProp.CoolProp.PropsSI('T','P',CTV_gauge11(1,4),'S',CTV_isentropicstate4entropy_11,'R12');
 CTV_virtualstate4temp_10 = py.CoolProp.CoolProp.PropsSI('T','P',CTV_gauge10(1,4),'S',CTV_isentropicstate4entropy_10,'R12');
 CTV_virtualstate4temp_01 = py.CoolProp.CoolProp.PropsSI('T','P',CTV_gauge01(1,4),'S',CTV_isentropicstate4entropy_01,'R12');
 
+%real temp calculation. h4real = V*I/mdot + h3
+
+%power calc divided by m dot
+
+AXV_powerovermdot_suction2psig = AXV_i(1,2)*AXV_v(1,1)/AXV_FR(1,1);
+AXV_powerovermdot_suction7psig = AXV_i(2,2)*AXV_v(2,1)/AXV_FR(2,1);
+AXV_powerovermdot_suction15psig = AXV_i(3,2)*AXV_v(3,1)/AXV_FR(3,1);
+AXV_powerovermdot_suction30psig = AXV_i(4,2)*AXV_v(4,1)/AXV_FR(4,1);
+
+TXV_powerovermdot_11 = TXV_i11(1,2)*TXV_v11/TXV_FR11;
+TXV_powerovermdot_10 = TXV_i10(1,2)*TXV_v10/TXV_FR10;
+
+CTV_powerovermdot_11= CTV_i11(1,2)*CTV_v11/CTV_FR11;
+CTV_powerovermdot_10= CTV_i10(1,2)*CTV_v10/CTV_FR10;
+CTV_powerovermdot_01= CTV_i01(1,2)*CTV_v01/CTV_FR01;
+
+%plus h3
+
+AXV_enthalpyrealstate4_suction2psig = AXV_powerovermdot_suction2psig + AXV_enthalpy_suction2psig(1,3);
+AXV_enthalpyrealstate4_suction7psig = AXV_powerovermdot_suction7psig + AXV_enthalpy_suction7psig(1,3);
+AXV_enthalpyrealstate4_suction15psig = AXV_powerovermdot_suction15psig + AXV_enthalpy_suction15psig(1,3);
+AXV_enthalpyrealstate4_suction30psig = AXV_powerovermdot_suction30psig + AXV_enthalpy_suction30psig(1,3);
+
+TXV_enthalpyrealstate4_11 = TXV_powerovermdot_11 + TXV_enthalpy_11(1,3);
+TXV_enthalpyrealstate4_10 = TXV_powerovermdot_10 + TXV_enthalpy_10(1,3);
+
+CTV_enthalpyrealstate4_11 = CTV_powerovermdot_11 + CTV_enthalpy_11(1,3);
+CTV_enthalpyrealstate4_10 = CTV_powerovermdot_10 + CTV_enthalpy_10(1,3);
+CTV_enthalpyrealstate4_01 = CTV_powerovermdot_01 + CTV_enthalpy_01(1,3);
+
+%look up entropy and temperature
+
+AXV_entropyrealstate4_suction2psig = py.CoolProp.CoolProp.PropsSI('S','H',AXV_enthalpyrealstate4_suction2psig,'P',AXV_gauge(1,4),'R12');
+AXV_entropyrealstate4_suction7psig = py.CoolProp.CoolProp.PropsSI('S','H',AXV_enthalpyrealstate4_suction7psig,'P',AXV_gauge(2,4),'R12');
+AXV_entropyrealstate4_suction15psig = py.CoolProp.CoolProp.PropsSI('S','H',AXV_enthalpyrealstate4_suction15psig,'P',AXV_gauge(3,4),'R12');
+AXV_entropyrealstate4_suction30psig = py.CoolProp.CoolProp.PropsSI('S','H',AXV_enthalpyrealstate4_suction30psig,'P',AXV_gauge(4,4),'R12');
+
+TXV_entropyrealstate4_11 = py.CoolProp.CoolProp.PropsSI('S','H',TXV_enthalpyrealstate4_11,'P',TXV_gauge11(1,4),'R12');
+TXV_entropyrealstate4_10 = py.CoolProp.CoolProp.PropsSI('S','H',TXV_enthalpyrealstate4_10,'P',TXV_gauge10(1,4),'R12');
+
+CTV_entropyrealstate4_11 = py.CoolProp.CoolProp.PropsSI('S','H',CTV_enthalpyrealstate4_11,'P',CTV_gauge11(1,4),'R12');
+CTV_entropyrealstate4_10 = py.CoolProp.CoolProp.PropsSI('S','H',CTV_enthalpyrealstate4_10,'P',CTV_gauge10(1,4),'R12');
+CTV_entropyrealstate4_01 = py.CoolProp.CoolProp.PropsSI('S','H',CTV_enthalpyrealstate4_01,'P',CTV_gauge01(1,4),'R12');
+
+%now temperature
+
+AXV_temperaturerealstate4_suction2psig = py.CoolProp.CoolProp.PropsSI('T','H',AXV_enthalpyrealstate4_suction2psig,'P',AXV_gauge(1,4),'R12');
+AXV_temperaturerealstate4_suction7psig = py.CoolProp.CoolProp.PropsSI('T','H',AXV_enthalpyrealstate4_suction7psig,'P',AXV_gauge(2,4),'R12');
+AXV_temperaturerealstate4_suction15psig = py.CoolProp.CoolProp.PropsSI('T','H',AXV_enthalpyrealstate4_suction15psig,'P',AXV_gauge(3,4),'R12');
+AXV_temperaturerealstate4_suction30psig = py.CoolProp.CoolProp.PropsSI('T','H',AXV_enthalpyrealstate4_suction30psig,'P',AXV_gauge(4,4),'R12');
+
+TXV_temperaturerealstate4_11 = py.CoolProp.CoolProp.PropsSI('T','H',TXV_enthalpyrealstate4_11,'P',TXV_gauge11(1,4),'R12');
+TXV_temperaturerealstate4_10 = py.CoolProp.CoolProp.PropsSI('T','H',TXV_enthalpyrealstate4_10,'P',TXV_gauge10(1,4),'R12');
+
+CTV_temperaturerealstate4_11 = py.CoolProp.CoolProp.PropsSI('T','H',CTV_enthalpyrealstate4_11,'P',CTV_gauge11(1,4),'R12');
+CTV_temperaturerealstate4_10 = py.CoolProp.CoolProp.PropsSI('T','H',CTV_enthalpyrealstate4_10,'P',CTV_gauge10(1,4),'R12');
+CTV_temperaturerealstate4_01 = py.CoolProp.CoolProp.PropsSI('T','H',CTV_enthalpyrealstate4_01,'P',CTV_gauge01(1,4),'R12');
+
 %Task 1 15psig suction pressure, Mollier diagram and TS diagram of cycle.
 %include saturation domes. show air inlet temperature (what is this)
 
 %generate dome
-Ssatliquid = zeros(1,130)
+Ssatliquid = zeros(1,130);
+Ssatvapor = zeros(1,130);
 for i = 240:385
     Ssatliquid(1,i-239) = py.CoolProp.CoolProp.PropsSI('S','T',i,'Q',0,'R12');
     Ssatvapor(1,i-239) = py.CoolProp.CoolProp.PropsSI('S','T',i,'Q',1,'R12');
 end
 
-ploty = AXV_temp(3,1:3); %this is me trying horribly to remove thermocouple measurements 4,5,7,8,9 from the data set
-ploty(1,4) = AXV_temp(3,6);
-plotx = AXV_entropy_suction15psig(1,1:3) % me removing the entropy measurements made with thermocouple 4 and 5
-plotx(1,4)= AXV_entropy_suction15psig(1,6)
+ploty = [AXV_temp(3,1), AXV_temp(3,2), ((AXV_temp(3,3)+AXV_temp(3,4))/2), ((AXV_temp(3,5)+AXV_temp(3,6))/2)] ; %this is me trying horribly to remove thermocouple measurements 4,5,7,8,9 from the data set
+plotx = AXV_entropy_suction15psig(1,1:4); % me removing the entropy measurements made with thermocouple 4 and 5
+
+figure;
+scatter(plotx, ploty, "DisplayName", "Measured Data Points"); %individual blue data points
+hold on;
+plot([AXV_entropy_suction15psig(1,1:2),py.CoolProp.CoolProp.PropsSI('S','T',AXV_temp(3, 2),'Q',1,'R12') , AXV_entropy_suction15psig(1,3:4)],[AXV_temp(3,1), AXV_temp(3,2), AXV_temp(3,2), ((AXV_temp(3,3)+AXV_temp(3,4))/2), ((AXV_temp(3,5)+AXV_temp(3,6))/2)], "Color", "b", "HandleVisibility","off") %lines between data points that follow constant pressure contours
+plot([AXV_entropy_suction15psig(1,3), AXV_entropyrealstate4_suction15psig], [((AXV_temp(3,3)+AXV_temp(3,4))/2), AXV_temperaturerealstate4_suction15psig], "Color", "b", "HandleVisibility","off")
+scatter(AXV_isentropicstate4entropy_suction15psig, AXV_virtualstate4temp_suction15psig, "Color", "o", "DisplayName", "Isentropic Compressor Exit State") % theoretical compressor data point
+scatter(AXV_entropyrealstate4_suction15psig, AXV_temperaturerealstate4_suction15psig, "Color", "r", "DisplayName", "Real Compressor Exit State") % theoretical compressor data point
+plot([AXV_isentropicstate4entropy_suction15psig, AXV_isentropicstate4entropy_suction15psig], [AXV_temp(3,3),AXV_virtualstate4temp_suction15psig], "Color", "#EDB120", "HandleVisibility","off") %theoretical compressor data point line
+plot([AXV_entropy_suction15psig(1,1), py.CoolProp.CoolProp.PropsSI('S','T',AXV_temp(3, 1),'Q',1,'R12'), AXV_entropy_suction15psig(1,4), AXV_entropyrealstate4_suction15psig], [AXV_temp(3,1),AXV_temp(3, 1), ((AXV_temp(3,5)+AXV_temp(3,6))/2), AXV_temperaturerealstate4_suction15psig], "Color", "b", "HandleVisibility","off") %additional line between data point following constant pressure lines
+plot(Ssatliquid, linspace(240,385,146), "red", "DisplayName", "Vapor Dome"); %dome
+plot(Ssatvapor, linspace(240,385,146), "red", "HandleVisibility","off"); %dome
+xlabel("Entropy (J/kg°K)")
+ylabel("Temperature (Kelvin)")
+title("Temperature vs. Entropy For AXV 15psig Suction Pressure")
+legend()
+hold off
+
+%Molleire Diagram
+
+%generate dome
+Ssatvapormolleire = zeros(1,130);
+Ssatliquidmolleire = zeros(1,130);
+Hsatvapormolleire = zeros(1,130);
+Hsatliquidmolleire = zeros(1,130);
+
+for i = 200:385.12
+    Ssatliquidmolleire(1,i-199) = py.CoolProp.CoolProp.PropsSI('S','T',i,'Q',0,'R12');
+    Ssatvapormolleire(1,i-199) = py.CoolProp.CoolProp.PropsSI('S','T',i,'Q',1,'R12');
+    Hsatliquidmolleire(1,i-199) = py.CoolProp.CoolProp.PropsSI('H','T',i,'Q',0,'R12');
+    Hsatvapormolleire(1,i-199) = py.CoolProp.CoolProp.PropsSI('H','T',i,'Q',1,'R12');
+end
 
 figure
-scatter(plotx, ploty)
+scatter(AXV_entropy_suction15psig(1,1:4), AXV_enthalpy_suction15psig(1,1:4), "DisplayName", "Measured Data Points")
 hold on
-plot(Ssatliquid, linspace(240,385,146), "red")
-plot(Ssatvapor, linspace(240,385,146), "red")
-
-
-
+scatter(AXV_isentropicstate4entropy_suction15psig, AXV_virtualstate4enthalpy_suction15psig, "Color", "g", "DisplayName", "Isentropic Compressor Exit State")
+plot([AXV_entropy_suction15psig(1,3), AXV_isentropicstate4entropy_suction15psig], [AXV_enthalpy_suction15psig(1,3), AXV_virtualstate4enthalpy_suction15psig], "HandleVisibility","off")
+plot(AXV_entropy_suction15psig(1,1:4), AXV_enthalpy_suction15psig(1,1:4), "Color", "b", "HandleVisibility","off")
+plot([AXV_entropy_suction15psig(1,1),AXV_entropy_suction15psig(1,4)] , [AXV_enthalpy_suction15psig(1,1), AXV_enthalpy_suction15psig(1,4)], "Color", "b", "HandleVisibility","off")
+plot(Ssatliquidmolleire, Hsatliquidmolleire, "red", "DisplayName", "Vapor Dome"); %dome
+plot(Ssatvapormolleire, Hsatvapormolleire, "red", "HandleVisibility","off"); %dome
+xlabel("Entropy (J/kg)")
+ylabel("Enthalpy (J/kg°K)")
+title("Mollier Diagram For AXV 15psig Suction Pressure")
+legend()
+hold off
 %Same for Task 2
 
 
 %PV plots with data from points of task 3
 
+%generate dome
+PsatgivenT = zeros(1,130);
+specificvolumeliquid = zeros(1,130);
+specificvolumesatvapor = zeros(1,130);
 
-%COP calc and RC capacity
+for i = 200:385
+    specificvolumesatvapor(1,i-199) = 1/py.CoolProp.CoolProp.PropsSI('D','T',i,'Q',1,'R12');
+    PsatgivenT(1,i-199) = py.CoolProp.CoolProp.PropsSI('P','T',i,'Q',0.5,'R12')./1000;
+    specificvolumeliquid(1,i-199) = 1/py.CoolProp.CoolProp.PropsSI('D','T',i,'Q',0,'R12');
+end
 
+figure
+scatter(CTV_specificvolume_11, CTV_gauge11./1000, "DisplayName", "Measured Data Points")
+hold on
+plot(CTV_specificvolume_11, CTV_gauge11./1000, "Color", "b", "HandleVisibility","off")
+plot([CTV_specificvolume_11(1,1), CTV_specificvolume_11(1,4)], [CTV_gauge11(1,1)/1000, CTV_gauge11(1,4)/1000], "Color", "b", "HandleVisibility","off")
+xlim([0 0.07])
+ylim([200 1500])
+plot(specificvolumeliquid, PsatgivenT, "red", "DisplayName", "Vapor Dome"); %dome
+plot(specificvolumesatvapor, PsatgivenT, "red", "HandleVisibility","off"); %dome
+legend()
+xlabel("Specific Volume (m^3/kg)")
+ylabel("Pressure (kPa)")
+title("Pressure vs. Specific Volume Diagram For CTV Evaporator and Condenser Switch High")
+hold off
+
+
+%COP calc and RC capacity for all points
+%exp COP  = h3 - h2 / (Wdot/mdot)
+
+AXV_COP_suction2psig = (AXV_enthalpy_suction2psig(1,3) - AXV_enthalpy_suction2psig(1,2))/AXV_powerovermdot_suction2psig;
+AXV_COP_suction7psig = (AXV_enthalpy_suction7psig(1,3) - AXV_enthalpy_suction7psig(1,2))/AXV_powerovermdot_suction7psig;
+AXV_COP_suction15psig = (AXV_enthalpy_suction15psig(1,3) - AXV_enthalpy_suction15psig(1,2))/AXV_powerovermdot_suction15psig;
+AXV_COP_suction30psig = (AXV_enthalpy_suction30psig(1,3) - AXV_enthalpy_suction30psig(1,2))/AXV_powerovermdot_suction30psig;
+
+TXV_COP_11 = (TXV_enthalpy_11(1,3) - TXV_enthalpy_11(1,2))/TXV_powerovermdot_11;
+TXV_COP_10 = (TXV_enthalpy_10(1,3) - TXV_enthalpy_10(1,2))/TXV_powerovermdot_10;
+
+CTV_COP_11 = (CTV_enthalpy_11(1,3) - CTV_enthalpy_11(1,2))/CTV_powerovermdot_11;
+CTV_COP_10 = (CTV_enthalpy_10(1,3) - CTV_enthalpy_10(1,2))/CTV_powerovermdot_10;
+CTV_COP_01 = (CTV_enthalpy_01(1,3) - CTV_enthalpy_01(1,2))/CTV_powerovermdot_01;
+
+%expRC = mdot(h3-h2)
+AXV_RC_suction2psig = (AXV_enthalpy_suction2psig(1,3) - AXV_enthalpy_suction2psig(1,2))*AXV_FR(1,1);
+AXV_RC_suction7psig =(AXV_enthalpy_suction7psig(1,3) - AXV_enthalpy_suction7psig(1,2))*AXV_FR(2,1);
+AXV_RC_suction15psig =(AXV_enthalpy_suction15psig(1,3) - AXV_enthalpy_suction15psig(1,2))*AXV_FR(3,1);
+AXV_RC_suction30psig =(AXV_enthalpy_suction30psig(1,3) - AXV_enthalpy_suction30psig(1,2))*AXV_FR(4,1);
+
+TXV_RC_11 =(TXV_enthalpy_11(1,3) - TXV_enthalpy_11(1,2))*TXV_FR11;
+TXV_RC_10 =(TXV_enthalpy_10(1,3) - TXV_enthalpy_10(1,2))*TXV_FR10;
+
+CTV_RC_11 =(CTV_enthalpy_11(1,3) - CTV_enthalpy_11(1,2))*CTV_FR11;
+CTV_RC_10 =(CTV_enthalpy_10(1,3) - CTV_enthalpy_10(1,2))*CTV_FR10;
+CTV_RC_01 =(CTV_enthalpy_01(1,3) - CTV_enthalpy_01(1,2))*CTV_FR01;
 
 %Amount of superheat for which thermally controlled expander is set
+%delta T = T3 - T'3
 
+TXV_superheattemp_11 = AXV_temp(1,3) - py.CoolProp.CoolProp.PropsSI('T','P',TXV_gauge11(1,2),'Q',0.5,'R12')
+TXV_superheattemp_10 = AXV_temp(2,3) - py.CoolProp.CoolProp.PropsSI('T','P',TXV_gauge10(1,2),'Q',0.5,'R12')
 
+TXVaveragesuperheat = (TXV_superheattemp_11 + TXV_superheattemp_10)/2
 
 %COP and RC as function of inlet suction pressure task 1
+
+figure
+scatter([AXV_COP_suction2psig, AXV_COP_suction7psig, AXV_COP_suction15psig, AXV_COP_suction30psig], [2, 7, 15, 30])
+hold on
+plot([AXV_COP_suction2psig, AXV_COP_suction7psig, AXV_COP_suction15psig, AXV_COP_suction30psig], [2, 7, 15, 30])
+
+
+figure
+scatter([2, 7, 15, 30], [AXV_RC_suction2psig, AXV_RC_suction7psig, AXV_RC_suction15psig, AXV_RC_suction30psig])
+hold on
+plot([2, 7, 15, 30], [AXV_RC_suction2psig, AXV_RC_suction7psig, AXV_RC_suction15psig, AXV_RC_suction30psig])
